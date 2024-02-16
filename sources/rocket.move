@@ -70,14 +70,15 @@ module rocket::rocket {
     public fun finalize(game: &mut Game, instance: Instance, price: Price, ctx: &mut TxContext) {
         assert!(instance.close_at < tx_context::epoch(ctx), EInvalidEpoch);
         let (price, _) = price_oracle::destroy(price);
-        if (!has_winner(&instance, price)) {
-            let new_instance = next_instance(game,&mut instance, ctx);        
-            transfer::share_object(new_instance);
-        } else {
+
+        if (has_winner(&instance, price)) {
             let winner = get_winner(&mut instance, price);
             let new_coin = coin::from_balance(balance::withdraw_all(&mut instance.balance), ctx);
-            sui::transfer(new_coin, winner);        
+            sui::transfer(new_coin, winner); 
         };
+
+        let new_instance = next_instance(game, &mut instance, ctx);        
+        transfer::share_object(new_instance);
         destroy_instance(instance)
   }
 
