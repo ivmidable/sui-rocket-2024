@@ -124,12 +124,14 @@ module rocket::rocket {
     fun next_instance(game: &mut Game, instance:&mut Instance, ctx: &mut TxContext) : Instance {
         assert!(game.cur_id != object::id(instance), EInvalidInstance);
         game.prev_id = option::some(object::id(instance));
-        Instance {
+        let new_instance = Instance {
             id: object::new(ctx),
             balance: balance::withdraw_all(&mut instance.balance),
             picks: table::new(ctx),
             close_at: tx_context::epoch(ctx)+game.cycle
-        }
+        };
+        game.cur_id = object::id(&new_instance);
+        new_instance
     }
 
     fun destroy_instance(instance: Instance) {
